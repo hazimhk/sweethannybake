@@ -4,17 +4,76 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kalkulator Adunan Mochi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Hanken+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
     <style>
       :root {
-        --bg: #0f1225;
-        --bg-2: #161a34;
-        --text: #edf1ff;
-        --text-muted: #b7c0e2;
-        --border: rgba(255, 255, 255, 0.2);
-        --panel: rgba(255, 255, 255, 0.08);
-        --accent: #9b5cff;
-        --accent-2: #4f8dff;
-        --success: #69f0c5;
+        --herb-100:#1A2415;
+        --herb-90:#222D1C;
+        --herb-70:#2E3D26;
+        --herb-50:#46583A;
+        --herb-30:#8C9479;
+        --herb-10:#E7EADF;
+        --clay-90:#8A3517;
+        --clay-70:#A6431F;
+        --clay-50:#C5592F;
+        --clay-30:#E0936E;
+        --clay-10:#F6E2D7;
+        --saffron-50:#E3A019;
+        --saffron-10:#F8EACB;
+        --neutral-100:#1B1A16;
+        --neutral-80:#46433A;
+        --neutral-60:#6E6A5C;
+        --neutral-40:#9A9384;
+        --neutral-30:#C9C0AD;
+        --neutral-20:#E2DACA;
+        --neutral-10:#F1ECE0;
+        --neutral-05:#FBF8F1;
+        --paper:#F6F1E7;
+        --white:#FFFFFF;
+        --red-50:#B23A2E;
+        --green-50:#3F7D43;
+
+        --background:var(--paper);
+        --background-hover:#EEE7D8;
+        --layer-01:var(--neutral-05);
+        --layer-02:var(--white);
+        --field-01:var(--white);
+        --field-hover-01:var(--neutral-05);
+        --text-primary:var(--neutral-100);
+        --text-secondary:var(--neutral-80);
+        --text-helper:var(--neutral-60);
+        --text-placeholder:var(--neutral-40);
+        --text-on-color:var(--paper);
+        --text-error:var(--red-50);
+        --border-subtle:var(--neutral-20);
+        --border-strong:var(--neutral-30);
+        --border-interactive:var(--herb-70);
+        --interactive:var(--herb-70);
+        --interactive-hover:var(--herb-90);
+        --interactive-active:var(--herb-100);
+        --accent:var(--clay-50);
+        --accent-hover:var(--clay-70);
+        --link:var(--clay-70);
+        --highlight:var(--saffron-50);
+        --support-success:var(--green-50);
+        --support-success-bg:#E1EEE0;
+        --support-error:var(--red-50);
+        --support-error-bg:#F6DEDA;
+
+        --font-display:"Fraunces", Georgia, serif;
+        --font-sans:"Hanken Grotesk", system-ui, sans-serif;
+        --font-mono:"Space Mono", monospace;
+        --radius-sm:6px;
+        --radius-md:10px;
+        --radius-lg:16px;
+        --radius-pill:100px;
+        --elev-01:0 1px 2px rgba(27,26,22,.06), 0 1px 3px rgba(27,26,22,.05);
+        --elev-02:0 4px 10px -4px rgba(27,26,22,.12);
+        --elev-03:0 18px 40px -22px rgba(27,26,22,.40);
+        --ease-standard:cubic-bezier(.2,0,.38,.9);
+        --dur-fast:110ms;
       }
 
       * {
@@ -23,14 +82,27 @@
 
       body {
         margin: 0;
-        font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
-        color: var(--text);
+        font-family: var(--font-sans);
+        color: var(--text-primary);
         min-height: 100vh;
         background:
-          radial-gradient(900px 420px at 10% 8%, rgba(155, 92, 255, 0.28), transparent),
-          radial-gradient(780px 420px at 90% 12%, rgba(79, 141, 255, 0.22), transparent),
-          linear-gradient(135deg, var(--bg), var(--bg-2));
+          linear-gradient(180deg, rgba(251, 248, 241, 0.88), rgba(246, 241, 231, 0.22)),
+          radial-gradient(circle at 12% 8%, rgba(198, 89, 47, 0.12), transparent 28%),
+          radial-gradient(circle at 88% 14%, rgba(46, 61, 38, 0.10), transparent 30%),
+          var(--background);
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: .03;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       }
 
       .app {
@@ -38,23 +110,10 @@
         width: min(920px, calc(100% - 1rem));
         margin: 0.6rem auto;
         padding: 1rem;
-        border-radius: 24px;
-        background: linear-gradient(140deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
-        border: 1px solid var(--border);
-        backdrop-filter: blur(16px) saturate(150%);
-        -webkit-backdrop-filter: blur(16px) saturate(150%);
-        box-shadow: 0 24px 42px rgba(5, 8, 24, 0.42);
-      }
-
-      .app::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: 24px;
-        border: 1px solid transparent;
-        background: linear-gradient(120deg, rgba(155, 92, 255, 0.5), rgba(79, 141, 255, 0.35));
-        opacity: 0.3;
-        pointer-events: none;
+        border-radius: var(--radius-lg);
+        background: var(--layer-01);
+        border: 1px solid var(--border-subtle);
+        box-shadow: var(--elev-03);
       }
 
       .app > * {
@@ -69,31 +128,52 @@
         margin-bottom: 0.6rem;
       }
 
+      .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .back-link {
+        color: var(--link);
+        text-decoration: none;
+        border-bottom: 1px solid currentColor;
+        font-size: 0.88rem;
+        font-weight: 600;
+      }
+
       .brand-logo {
         width: 62px;
         height: 62px;
         object-fit: contain;
-        border-radius: 14px;
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-subtle);
+        background: var(--layer-02);
         padding: 4px;
-        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+        box-shadow: var(--elev-02);
       }
 
       h1 {
         margin: 0;
-        font-size: 1.35rem;
-        color: #f8faff;
+        font-family: var(--font-display);
+        font-size: 1.85rem;
+        line-height: 1;
+        font-weight: 340;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
       }
 
       h2 {
         margin: 0;
         font-size: 1.05rem;
-        color: #edf2ff;
+        font-weight: 600;
+        color: var(--text-primary);
       }
 
       .tiny {
-        color: var(--text-muted);
+        color: var(--text-helper);
         font-size: 0.92rem;
         margin: 0.5rem 0;
       }
@@ -106,28 +186,31 @@
       }
 
       .step-chip {
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        background: rgba(255, 255, 255, 0.08);
-        color: #dde3ff;
-        border-radius: 999px;
+        border: 1px solid var(--border-subtle);
+        background: var(--layer-02);
+        color: var(--text-secondary);
+        border-radius: var(--radius-pill);
         text-align: center;
         padding: 0.5rem;
+        font-family: var(--font-mono);
         font-size: 0.8rem;
+        letter-spacing: 0.04em;
       }
 
       .step-chip.active {
-        background: linear-gradient(130deg, rgba(155, 92, 255, 0.95), rgba(79, 141, 255, 0.9));
-        color: white;
+        background: var(--interactive);
+        color: var(--text-on-color);
         font-weight: 700;
         border-color: transparent;
       }
 
       .step-panel {
         display: none;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border);
-        border-radius: 16px;
+        background: var(--layer-02);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
         padding: 1rem;
+        box-shadow: var(--elev-01);
       }
 
       .step-panel.active {
@@ -158,10 +241,11 @@
 
       .card {
         padding: 0.85rem;
-        border-radius: 14px;
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-subtle);
+        background: var(--layer-01);
         margin-bottom: 0.7rem;
+        box-shadow: var(--elev-01);
       }
 
       .order-card {
@@ -182,36 +266,51 @@
 
       .order-title {
         font-weight: 700;
-        color: #f1f3ff;
+        color: var(--text-primary);
       }
 
       .remove-btn {
         border: 0;
-        border-radius: 10px;
+        border-radius: var(--radius-pill);
         padding: 0.46rem 0.7rem;
-        background: linear-gradient(130deg, #ff6ea3, #ff3d89);
+        background: var(--support-error);
         color: white;
         font-weight: 600;
-        box-shadow: 0 10px 20px rgba(255, 61, 137, 0.25);
+        box-shadow: none;
       }
 
       label {
+        font-family: var(--font-mono);
         font-size: 0.86rem;
-        color: #f4f7ff;
+        color: var(--text-secondary);
         font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         display: block;
       }
 
       input[type='number'] {
         width: 100%;
         margin-top: 0.3rem;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.10);
-        color: var(--text);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        background: var(--field-01);
+        color: var(--text-primary);
         padding: 0.55rem;
         font-size: 1rem;
         line-height: 1.2;
+        font-family: var(--font-sans);
+        transition: border var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background var(--dur-fast) var(--ease-standard);
+      }
+
+      input[type='number']:hover {
+        background: var(--field-hover-01);
+      }
+
+      input[type='number']:focus {
+        outline: none;
+        border-color: var(--border-interactive);
+        box-shadow: 0 0 0 3px rgba(46,61,38,.14);
       }
 
       .cost-card {
@@ -222,33 +321,53 @@
       .pill {
         display: inline-flex;
         align-items: center;
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        border-radius: 999px;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-pill);
         font-size: 0.76rem;
         padding: 0.3rem 0.55rem;
-        color: #d6ddff;
+        color: var(--herb-70);
+        background: var(--herb-10);
+        font-family: var(--font-mono);
       }
 
       button {
         border: 0;
-        border-radius: 10px;
+        border-radius: var(--radius-pill);
         padding: 0.65rem 0.75rem;
         cursor: pointer;
-        color: white;
+        color: var(--text-on-color);
         font-weight: 700;
-        background: linear-gradient(130deg, var(--accent), var(--accent-2));
-        box-shadow: 0 12px 24px rgba(79, 141, 255, 0.25);
+        background: var(--interactive);
+        box-shadow: none;
+        font-family: var(--font-sans);
+        transition: background var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
+      }
+
+      button:hover {
+        background: var(--interactive-hover);
+      }
+
+      button:active {
+        transform: translateY(1px);
       }
 
       .btn-secondary {
-        background: linear-gradient(130deg, #6e7ba0, #3c4775);
+        background: var(--accent);
+      }
+
+      .btn-secondary:hover {
+        background: var(--accent-hover);
       }
 
       .btn-ghost {
-        background: rgba(255, 255, 255, 0.1);
-        color: #e8ecff;
-        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--interactive);
+        border: 1px solid var(--interactive);
         box-shadow: none;
+      }
+
+      .btn-ghost:hover {
+        background: var(--herb-10);
       }
 
       .summary-block {
@@ -262,16 +381,16 @@
         align-items: baseline;
         gap: 0.6rem;
         padding: 0.72rem 0.7rem;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--border-subtle);
       }
 
       .summary-item strong {
         font-size: 1.03rem;
-        color: #f7faff;
+        color: var(--text-primary);
       }
 
       .muted {
-        color: var(--text-muted);
+        color: var(--text-helper);
       }
 
       .ingredient-result {
@@ -291,36 +410,36 @@
       }
 
       .highlight {
-        color: var(--success);
+        color: var(--support-success);
         font-weight: 700;
       }
 
       .grand-total {
         margin-top: 0.8rem;
-        border-radius: 14px;
-        border: 1px solid rgba(105, 240, 197, 0.4);
-        background: rgba(105, 240, 197, 0.12);
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(63, 125, 67, 0.28);
+        background: var(--support-success-bg);
         padding: 0.8rem;
         text-align: center;
       }
 
       .grand-total div:first-child {
-        color: #d8ffe9;
+        color: var(--herb-70);
         font-size: 0.85rem;
       }
 
       .grand-total div:last-child {
-        color: #9ffed0;
+        color: var(--support-success);
         font-weight: 800;
         font-size: 1.3rem;
       }
 
       .empty {
         text-align: center;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-md);
+        background: var(--support-error-bg);
         padding: 0.9rem;
-        color: #d1daff;
+        color: var(--support-error);
       }
 
       @media (min-width: 640px) {
@@ -354,12 +473,15 @@
   </head>
   <body>
     <main class="app">
-      <div class="brand">
-        <img class="brand-logo" src="logo.jpeg" alt="Swee Hanny Bake logo" />
-        <div>
-          <h1>Kalkulator Adunan Mochi</h1>
-          <p class="tiny">Asas resipi: 130g tepung pulut, 8g tepung jagung, 30g tepung susu, 180g air, garam secubit, 2 sudu minyak jagung.</p>
+      <div class="top-nav">
+        <div class="brand">
+          <img class="brand-logo" src="logo.jpeg" alt="Swee Hanny Bake logo" />
+          <div>
+            <h1>Kalkulator Adunan Mochi</h1>
+            <p class="tiny">Asas resipi: 130g tepung pulut, 8g tepung jagung, 30g tepung susu, 180g air, garam secubit, 2 sudu minyak jagung.</p>
+          </div>
         </div>
+        <a class="back-link" href="index.html">Marketplace</a>
       </div>
 
       <p class="tiny">
