@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kalkulator Adunan Mochi</title>
+    <style>
+      :root {
+        --bg: #0f1225;
+        --bg-2: #161a34;
+        --text: #edf1ff;
+        --text-muted: #b7c0e2;
+        --border: rgba(255, 255, 255, 0.2);
+        --panel: rgba(255, 255, 255, 0.08);
+        --accent: #9b5cff;
+        --accent-2: #4f8dff;
+        --success: #69f0c5;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+        color: var(--text);
+        min-height: 100vh;
+        background:
+          radial-gradient(900px 420px at 10% 8%, rgba(155, 92, 255, 0.28), transparent),
+          radial-gradient(780px 420px at 90% 12%, rgba(79, 141, 255, 0.22), transparent),
+          linear-gradient(135deg, var(--bg), var(--bg-2));
+        overflow-x: hidden;
+      }
+
+      .app {
+        position: relative;
+        width: min(920px, calc(100% - 1rem));
+        margin: 0.6rem auto;
+        padding: 1rem;
+        border-radius: 24px;
+        background: linear-gradient(140deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+        border: 1px solid var(--border);
+        backdrop-filter: blur(16px) saturate(150%);
+        -webkit-backdrop-filter: blur(16px) saturate(150%);
+        box-shadow: 0 24px 42px rgba(5, 8, 24, 0.42);
+      }
+
+      .app::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 24px;
+        border: 1px solid transparent;
+        background: linear-gradient(120deg, rgba(155, 92, 255, 0.5), rgba(79, 141, 255, 0.35));
+        opacity: 0.3;
+        pointer-events: none;
+      }
+
+      .app > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 0.6rem;
+      }
+
+      .brand-logo {
+        width: 62px;
+        height: 62px;
+        object-fit: contain;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.08);
+        padding: 4px;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.35rem;
+        color: #f8faff;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1.05rem;
+        color: #edf2ff;
+      }
+
+      .tiny {
+        color: var(--text-muted);
+        font-size: 0.92rem;
+        margin: 0.5rem 0;
+      }
+
+      .steps {
+        margin: 1rem 0;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.45rem;
+      }
+
+      .step-chip {
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.08);
+        color: #dde3ff;
+        border-radius: 999px;
+        text-align: center;
+        padding: 0.5rem;
+        font-size: 0.8rem;
+      }
+
+      .step-chip.active {
+        background: linear-gradient(130deg, rgba(155, 92, 255, 0.95), rgba(79, 141, 255, 0.9));
+        color: white;
+        font-weight: 700;
+        border-color: transparent;
+      }
+
+      .step-panel {
+        display: none;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1rem;
+      }
+
+      .step-panel.active {
+        display: block;
+      }
+
+      .panel-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.5rem;
+      }
+
+      .toolbar,
+      .actions {
+        display: flex;
+        gap: 0.6rem;
+        margin-top: 0.8rem;
+      }
+
+      .toolbar {
+        flex-wrap: wrap;
+      }
+
+      .actions {
+        margin-top: 1rem;
+      }
+
+      .card {
+        padding: 0.85rem;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.08);
+        margin-bottom: 0.7rem;
+      }
+
+      .order-card {
+        display: grid;
+        gap: 0.55rem;
+      }
+
+      .order-card .row {
+        display: grid;
+        gap: 0.2rem;
+      }
+
+      .order-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .order-title {
+        font-weight: 700;
+        color: #f1f3ff;
+      }
+
+      .remove-btn {
+        border: 0;
+        border-radius: 10px;
+        padding: 0.46rem 0.7rem;
+        background: linear-gradient(130deg, #ff6ea3, #ff3d89);
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 10px 20px rgba(255, 61, 137, 0.25);
+      }
+
+      label {
+        font-size: 0.86rem;
+        color: #f4f7ff;
+        font-weight: 600;
+        display: block;
+      }
+
+      input[type='number'] {
+        width: 100%;
+        margin-top: 0.3rem;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.10);
+        color: var(--text);
+        padding: 0.55rem;
+        font-size: 1rem;
+        line-height: 1.2;
+      }
+
+      .cost-card {
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 999px;
+        font-size: 0.76rem;
+        padding: 0.3rem 0.55rem;
+        color: #d6ddff;
+      }
+
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 0.65rem 0.75rem;
+        cursor: pointer;
+        color: white;
+        font-weight: 700;
+        background: linear-gradient(130deg, var(--accent), var(--accent-2));
+        box-shadow: 0 12px 24px rgba(79, 141, 255, 0.25);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(130deg, #6e7ba0, #3c4775);
+      }
+
+      .btn-ghost {
+        background: rgba(255, 255, 255, 0.1);
+        color: #e8ecff;
+        border: 1px solid var(--border);
+        box-shadow: none;
+      }
+
+      .summary-block {
+        display: grid;
+        gap: 0.7rem;
+      }
+
+      .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.6rem;
+        padding: 0.72rem 0.7rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .summary-item strong {
+        font-size: 1.03rem;
+        color: #f7faff;
+      }
+
+      .muted {
+        color: var(--text-muted);
+      }
+
+      .ingredient-result {
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      .ingredient-result .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.4rem;
+        align-items: baseline;
+      }
+
+      .ingredient-result .name {
+        font-weight: 600;
+      }
+
+      .highlight {
+        color: var(--success);
+        font-weight: 700;
+      }
+
+      .grand-total {
+        margin-top: 0.8rem;
+        border-radius: 14px;
+        border: 1px solid rgba(105, 240, 197, 0.4);
+        background: rgba(105, 240, 197, 0.12);
+        padding: 0.8rem;
+        text-align: center;
+      }
+
+      .grand-total div:first-child {
+        color: #d8ffe9;
+        font-size: 0.85rem;
+      }
+
+      .grand-total div:last-child {
+        color: #9ffed0;
+        font-weight: 800;
+        font-size: 1.3rem;
+      }
+
+      .empty {
+        text-align: center;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 0.9rem;
+        color: #d1daff;
+      }
+
+      @media (min-width: 640px) {
+        .app {
+          width: min(960px, calc(100% - 1.5rem));
+          padding: 1.25rem;
+        }
+
+        .step-chip {
+          font-size: 0.9rem;
+          padding: 0.6rem 0.45rem;
+        }
+
+        .toolbar,
+        .actions {
+          justify-content: flex-end;
+        }
+
+        .order-card {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+          align-items: end;
+          gap: 0.6rem;
+        }
+
+        .order-card .row {
+          margin: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <div class="brand">
+        <img class="brand-logo" src="logo.jpeg" alt="Swee Hanny Bake logo" />
+        <div>
+          <h1>Kalkulator Adunan Mochi</h1>
+          <p class="tiny">Asas resipi: 130g tepung pulut, 8g tepung jagung, 30g tepung susu, 180g air, garam secubit, 2 sudu minyak jagung.</p>
+        </div>
+      </div>
+
+      <p class="tiny">
+        Reka bentuk kini multistep wizard untuk guna mudah pada mobile. Harga digunakan sebagai data dummy (boleh ubah ikut harga semasa anda).
+      </p>
+
+      <div class="steps" aria-label="Progress wizard">
+        <div class="step-chip active" data-step="0">1. Order</div>
+        <div class="step-chip" data-step="1">2. Harga</div>
+        <div class="step-chip" data-step="2">3. Ringkasan</div>
+      </div>
+
+      <!-- STEP 1 -->
+      <section class="step-panel active" data-step="0">
+        <div class="panel-title">
+          <h2>Jumlah Order Mochi</h2>
+          <span class="pill">Fokus mudah guna, mobile first</span>
+        </div>
+        <p class="tiny">Tambah berbeza saiz ketul. Contoh: 100 pcs @ 30g, 100 pcs @ 20g, 100 pcs @ 10g.</p>
+
+        <div id="orderCards"></div>
+
+        <div class="toolbar">
+          <button id="addOrder">+ Tambah baris order</button>
+          <button id="fillExample" class="btn-ghost">Isi contoh pesanan</button>
+        </div>
+      </section>
+
+      <!-- STEP 2 -->
+      <section class="step-panel" data-step="1">
+        <div class="panel-title">
+          <h2>Harga Bahan</h2>
+          <span class="pill">Boleh edit mana-mana harga</span>
+        </div>
+        <p class="tiny">Harga ini diambil sebagai anggaran pasaran Malaysia semasa.</p>
+        <div id="costCards"></div>
+      </section>
+
+      <!-- STEP 3 -->
+      <section class="step-panel" data-step="2">
+        <div class="panel-title">
+          <h2>Ringkasan</h2>
+          <span class="pill">Hasil pengiraan terkini</span>
+        </div>
+        <div class="summary-block" id="summary"></div>
+        <div id="ingredientResult" class="ingredient-result"></div>
+      </section>
+
+      <div class="actions">
+        <button class="btn-secondary" id="prevBtn">Kembali</button>
+        <button id="nextBtn">Seterusnya</button>
+      </div>
+    </main>
+
+    <script>
+      const BASE_DOUGH_GRAM = 370;
+
+      const BASE_RECIPE = [
+        {
+          id: "tepung-pulut",
+          name: "Tepung pulut",
+          amount: 130,
+          unit: "g",
+          costLabel: "RM / 100g",
+          costMode: "per100g",
+          defaultPrice: 1.8,
+        },
+        {
+          id: "tepung-jagung",
+          name: "Tepung jagung",
+          amount: 8,
+          unit: "g",
+          costLabel: "RM / 100g",
+          costMode: "per100g",
+          defaultPrice: 2.2,
+        },
+        {
+          id: "tepung-susu",
+          name: "Tepung susu",
+          amount: 30,
+          unit: "g",
+          costLabel: "RM / 100g",
+          costMode: "per100g",
+          defaultPrice: 6.5,
+        },
+        {
+          id: "air",
+          name: "Air",
+          amount: 180,
+          unit: "g",
+          costLabel: "RM / 100g",
+          costMode: "per100g",
+          defaultPrice: 0.004,
+        },
+        {
+          id: "garam",
+          name: "Garam",
+          amount: 1,
+          unit: "secubit",
+          costLabel: "RM / secubit",
+          costMode: "perUnit",
+          defaultPrice: 0.02,
+        },
+        {
+          id: "minyak-jagung",
+          name: "Minyak jagung",
+          amount: 2,
+          unit: "sudu",
+          costLabel: "RM / sudu",
+          costMode: "perUnit",
+          defaultPrice: 0.55,
+        },
+      ];
+
+      const stepPanels = document.querySelectorAll(".step-panel");
+      const stepChips = document.querySelectorAll(".step-chip");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const orderCardsWrap = document.getElementById("orderCards");
+      const costCardsWrap = document.getElementById("costCards");
+      const summaryWrap = document.getElementById("summary");
+      const ingredientResult = document.getElementById("ingredientResult");
+      const addOrderBtn = document.getElementById("addOrder");
+      const fillExampleBtn = document.getElementById("fillExample");
+
+      let step = 0;
+
+      let orderItems = [{ pieces: '', weight: '' }];
+      let costValues = Object.fromEntries(BASE_RECIPE.map((i) => [i.id, i.defaultPrice]));
+
+      function formatCurrency(value) {
+        return value.toLocaleString("ms-MY", {
+          style: "currency",
+          currency: "MYR",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      }
+
+      function formatNumber(value) {
+        return Number.isInteger(value) ? value : Number(value.toFixed(2));
+      }
+
+      function toNumber(v) {
+        const n = Number.parseFloat(v);
+        return Number.isFinite(n) ? n : 0;
+      }
+
+      function safeValue(n) {
+        const out = Number(n);
+        return Number.isFinite(out) ? Math.max(0, out) : 0;
+      }
+
+      function nextId() {
+        return Math.random().toString(36).slice(2, 8);
+      }
+
+      function updateStepper() {
+        stepPanels.forEach((panel) => {
+          panel.classList.toggle("active", Number(panel.dataset.step) === step);
+        });
+
+        stepChips.forEach((chip) => {
+          chip.classList.toggle("active", Number(chip.dataset.step) === step);
+        });
+
+        prevBtn.style.display = step === 0 ? "none" : "inline-flex";
+
+        if (step === 2) {
+          nextBtn.textContent = "Kembali ke mula";
+          renderSummary();
+        } else {
+          nextBtn.textContent = "Seterusnya";
+        }
+      }
+
+      function renderOrderCards() {
+        orderCardsWrap.innerHTML = "";
+
+        if (!orderItems.length) {
+          orderItems = [{ pieces: '', weight: '' }];
+        }
+
+        orderItems.forEach((item, index) => {
+          const card = document.createElement("article");
+          card.className = "card order-card";
+          card.innerHTML = `
+            <div class="order-head" style="grid-column: 1 / -1;">
+              <span class="order-title">Baris ${index + 1}</span>
+              <button type="button" class="remove-btn" data-action="remove" data-index="${index}">Buang</button>
+            </div>
+            <div class="row">
+              <label>Jumlah ketul</label>
+              <input
+                type="number"
+                inputmode="numeric"
+                min="0"
+                step="1"
+                value="${item.pieces}"
+                data-action="pieces"
+                data-index="${index}"
+                placeholder="cth. 100"
+              />
+            </div>
+            <div class="row">
+              <label>Berat satu ketul (g)</label>
+              <input
+                type="number"
+                inputmode="decimal"
+                min="1"
+                step="1"
+                value="${item.weight}"
+                data-action="weight"
+                data-index="${index}"
+                placeholder="cth. 30"
+              />
+            </div>
+            <div class="row">
+              <label>Jumlah berat</label>
+              <div class="pill">${formatNumber(safeValue(item.pieces) * safeValue(item.weight))} g</div>
+            </div>
+          `;
+
+          orderCardsWrap.appendChild(card);
+        });
+
+        if (orderItems.length === 1) {
+          const firstButton = orderCardsWrap.querySelector('.remove-btn');
+          if (firstButton) {
+            firstButton.disabled = true;
+            firstButton.style.opacity = 0.5;
+          }
+        }
+      }
+
+      function renderCostCards() {
+        costCardsWrap.innerHTML = "";
+
+        BASE_RECIPE.forEach((item) => {
+          const card = document.createElement("article");
+          card.className = "card cost-card";
+          card.innerHTML = `
+            <div class="order-head" style="grid-column: 1 / -1;">
+              <span class="order-title">${item.name}</span>
+              <span class="pill">${item.amount} ${item.unit} / adunan</span>
+            </div>
+            <div class="row">
+              <label>Harga ${item.costLabel}</label>
+              <input
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="0.01"
+                value="${formatNumber(costValues[item.id])}"
+                data-ingredient="${item.id}"
+              />
+            </div>
+          `;
+          costCardsWrap.appendChild(card);
+        });
+      }
+
+      function collectOrders() {
+        const piecesInputs = document.querySelectorAll('[data-action="pieces"]');
+        const weightInputs = document.querySelectorAll('[data-action="weight"]');
+
+        const rows = [];
+        const byIndex = {};
+
+        piecesInputs.forEach((input) => {
+          const index = Number(input.dataset.index);
+          byIndex[index] = byIndex[index] || {};
+          byIndex[index].pieces = input.value;
+        });
+
+        weightInputs.forEach((input) => {
+          const index = Number(input.dataset.index);
+          byIndex[index] = byIndex[index] || {};
+          byIndex[index].weight = input.value;
+        });
+
+        Object.keys(byIndex).forEach((key) => {
+          const i = Number(key);
+          rows[i] = {
+            pieces: byIndex[i].pieces,
+            weight: byIndex[i].weight,
+          };
+        });
+
+        return rows;
+      }
+
+      function updateOrderStore() {
+        orderItems = collectOrders();
+      }
+
+      function calculateTotals() {
+        const rows = collectOrders();
+        let totalPieces = 0;
+        let totalDoughNeeded = 0;
+        const validRows = [];
+
+        rows.forEach((row, idx) => {
+          const pieces = Math.max(0, Number.parseInt(row.pieces, 10) || 0);
+          const weight = toNumber(row.weight);
+          if (pieces > 0 && weight > 0) {
+            const amount = pieces * weight;
+            totalPieces += pieces;
+            totalDoughNeeded += amount;
+            validRows.push({
+              id: idx + 1,
+              pieces,
+              weight,
+              amount,
+            });
+          }
+        });
+
+        const adunanExact = totalDoughNeeded / BASE_DOUGH_GRAM;
+        const adunanNeed = totalDoughNeeded > 0 ? Math.ceil(adunanExact) : 0;
+
+        return {
+          totalPieces,
+          totalDoughNeeded,
+          adunanExact,
+          adunanNeed,
+          validRows,
+        };
+      }
+
+      function calculateIngredientCost(adunanCount) {
+        const rows = [];
+        let total = 0;
+
+        BASE_RECIPE.forEach((item) => {
+          const amount = item.amount * adunanCount;
+          const rate = safeValue(costValues[item.id]);
+          let cost;
+          if (item.costMode === "per100g") {
+            cost = (amount / 100) * rate;
+          } else {
+            cost = amount * rate;
+          }
+          total += cost;
+          rows.push({
+            ...item,
+            amount,
+            cost,
+          });
+        });
+
+        return { rows, total };
+      }
+
+      function renderSummary() {
+        const totals = calculateTotals();
+        const costs = calculateIngredientCost(totals.adunanNeed);
+        const hasOrders = totals.validRows.length > 0;
+
+        summaryWrap.innerHTML = "";
+        ingredientResult.innerHTML = "";
+
+        const header = document.createElement("div");
+        header.className = "card";
+
+        if (!hasOrders) {
+          header.innerHTML = `<div class="empty">Tiada baris order sah. Sila kembali ke langkah 1 dan masukkan jumlah ketul + berat.</div>`;
+          summaryWrap.appendChild(header);
+          ingredientResult.appendChild(header.cloneNode(true));
+          return;
+        }
+
+        header.innerHTML = `
+          <div class="summary-item">
+            <span>Jumlah order</span>
+            <strong>${formatNumber(totals.totalPieces)} pcs</strong>
+          </div>
+          <div class="summary-item">
+            <span>Total doh diperlukan</span>
+            <strong>${formatNumber(totals.totalDoughNeeded)} g</strong>
+          </div>
+          <div class="summary-item">
+            <span>Takungan adunan sebenar</span>
+            <strong>${formatNumber(totals.adunanExact)} adunan</strong>
+          </div>
+          <div class="summary-item">
+            <span>Adunan dicadangkan</span>
+            <strong>${formatNumber(totals.adunanNeed)} adunan</strong>
+          </div>
+          <div class="summary-item">
+            <span>Maklumat rujukan</span>
+            <span class="muted">1 adunan = 370g (≈ ${Math.floor(BASE_DOUGH_GRAM / 30)}pcs @30g, ${Math.floor(BASE_DOUGH_GRAM / 20)}pcs @20g, ${Math.floor(BASE_DOUGH_GRAM / 10)}pcs @10g)</span>
+          </div>
+        `;
+
+        const ordersHeader = document.createElement("div");
+        ordersHeader.className = "card";
+        const orderLines = totals.validRows
+          .map(
+            (row) => `<div class="summary-item"><span>${row.pieces} pcs x ${row.weight}g</span><strong>${row.amount} g</strong></div>`
+          )
+          .join("");
+
+        ordersHeader.innerHTML = `<h2>Ringkasan Order</h2>${orderLines || ''}`;
+
+        const costHeader = document.createElement("div");
+        costHeader.className = "card";
+        const ingredientLines = costs.rows
+          .map(
+            (r) => `
+              <div class="row">
+                <div>
+                  <div class="name">${r.name}</div>
+                  <div class="muted">${formatNumber(r.amount)} ${r.unit}</div>
+                </div>
+                <div class="highlight">${formatCurrency(r.cost)}</div>
+              </div>`
+          )
+          .join("");
+
+        costHeader.innerHTML = `<h2>Kos bahan</h2>${ingredientLines}`;
+
+        const totalCard = document.createElement("div");
+        totalCard.className = "grand-total";
+        totalCard.innerHTML = `<div>Anggaran kos keseluruhan</div><div>${formatCurrency(costs.total)}</div>`;
+
+        summaryWrap.appendChild(ordersHeader);
+        summaryWrap.appendChild(header);
+        ingredientResult.appendChild(costHeader);
+        ingredientResult.appendChild(totalCard);
+      }
+
+      function bindEvents() {
+        addOrderBtn.addEventListener("click", () => {
+          orderItems.push({ pieces: '', weight: '' });
+          renderOrderCards();
+        });
+
+        fillExampleBtn.addEventListener("click", () => {
+          orderItems = [
+            { pieces: 100, weight: 30 },
+            { pieces: 100, weight: 20 },
+            { pieces: 100, weight: 10 },
+          ];
+          renderOrderCards();
+        });
+
+        orderCardsWrap.addEventListener("click", (event) => {
+          const button = event.target.closest("[data-action='remove']");
+          if (!button) return;
+
+          const index = Number(button.dataset.index);
+          if (orderItems.length <= 1) return;
+          orderItems = orderItems.filter((_, idx) => idx !== index);
+          renderOrderCards();
+        });
+
+        costCardsWrap.addEventListener("input", (event) => {
+          const target = event.target.closest("[data-ingredient]");
+          if (!target) return;
+          const key = target.dataset.ingredient;
+          costValues[key] = safeValue(target.value);
+        });
+
+        orderCardsWrap.addEventListener("input", (event) => {
+          const actionEl = event.target.closest("[data-action]");
+          if (!actionEl) return;
+          const index = Number(actionEl.dataset.index);
+          const action = actionEl.dataset.action;
+          if (action === "pieces") {
+            orderItems[index].pieces = actionEl.value;
+          }
+          if (action === "weight") {
+            orderItems[index].weight = actionEl.value;
+          }
+          const card = actionEl.closest(".order-card");
+          if (card) {
+            const pieces = safeValue(orderItems[index].pieces);
+            const weight = safeValue(orderItems[index].weight);
+            const amountLabel = card.querySelector(".pill");
+            if (amountLabel) {
+              amountLabel.textContent = `${formatNumber(pieces * weight)} g`;
+            }
+          }
+          updateOrderStore();
+        });
+
+        prevBtn.addEventListener("click", () => {
+          if (step > 0) {
+            step -= 1;
+            updateStepper();
+          }
+        });
+
+        nextBtn.addEventListener("click", () => {
+          if (step < 2) {
+            step += 1;
+            if (step === 2) {
+              updateOrderStore();
+              renderSummary();
+            }
+            updateStepper();
+            return;
+          }
+
+          step = 0;
+          updateStepper();
+          renderSummary();
+        });
+      }
+
+      renderOrderCards();
+      renderCostCards();
+      updateStepper();
+      bindEvents();
+    </script>
+  </body>
+</html>
