@@ -75,6 +75,7 @@ Then open: `http://localhost:8000`
 ## 📥 Save Orders To Google Sheets
 
 This project can save customer checkout orders into a Google Sheet through Google Apps Script.
+The free payment flow uses a static QR image and manual payment verification.
 
 Setup:
 
@@ -82,6 +83,7 @@ Setup:
 2. Create a new project.
 3. Paste the code from `google-apps-script.js`.
 4. Run the `setup()` function once and approve Google permissions.
+   This also installs the receipt trigger.
 5. Deploy the project:
    - Click **Deploy** → **New deployment**
    - Select **Web app**
@@ -104,6 +106,36 @@ The sheet will contain:
 
 - `Orders`
 - `Order Items`
+
+### Static QR Payment
+
+Upload your payment QR image to the project root as:
+
+```text
+payment-qr.jpeg
+```
+
+Customer flow:
+
+- Customer selects mochi.
+- Customer opens checkout.
+- Customer scans your static QR and pays manually.
+- Customer submits the order.
+- Order is saved with `Payment Status = Pending Payment`.
+
+Owner flow:
+
+- Open the Google Sheet.
+- Verify payment in your bank/e-wallet account.
+- Change the order's `Payment Status` cell to `Paid`.
+- Apps Script will update `Order Status` to `Paid`.
+- If the customer provided email, Apps Script sends a receipt email.
+- The Sheet also contains a `WhatsApp Receipt Link` for manual receipt sending.
+
+Important limitation:
+
+- Static QR payment cannot be verified automatically for free.
+- WhatsApp cannot be sent automatically for free without WhatsApp Business API.
 
 ## 📁 Project files
 

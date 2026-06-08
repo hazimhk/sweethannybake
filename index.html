@@ -651,6 +651,43 @@
         font-size: 0.9rem;
       }
 
+      .payment-box {
+        display: grid;
+        gap: 0.7rem;
+        margin-bottom: 1rem;
+        padding: 0.85rem;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        background: var(--layer-01);
+      }
+
+      .payment-box h3 {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .payment-box p {
+        margin: 0;
+        color: var(--text-secondary);
+        line-height: 1.55;
+        font-size: 0.9rem;
+      }
+
+      .payment-qr {
+        width: min(240px, 100%);
+        aspect-ratio: 1;
+        object-fit: contain;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        background: var(--layer-02);
+        padding: 0.75rem;
+      }
+
+      .qr-missing {
+        color: var(--support-error);
+        font-size: 0.86rem;
+      }
+
       .checkout-form {
         display: grid;
         gap: 0.75rem;
@@ -926,6 +963,22 @@
               <button class="checkout-close" id="closeCheckout" aria-label="Close checkout">x</button>
             </div>
             <div class="checkout-summary" id="checkoutSummary"></div>
+            <div class="payment-box">
+              <h3>Payment</h3>
+              <p>
+                Scan this QR and complete payment first. Your order will be saved
+                as pending payment, then Swee Hanny Bake will verify it manually.
+              </p>
+              <img
+                class="payment-qr"
+                src="payment-qr.jpeg"
+                alt="Payment QR code"
+                onerror="this.style.display='none'; document.getElementById('qrMissing').hidden = false;"
+              />
+              <div class="qr-missing" id="qrMissing" hidden>
+                Payment QR image not uploaded yet. Add `payment-qr.jpeg` to the project root.
+              </div>
+            </div>
             <form class="checkout-form" id="checkoutForm">
               <div class="field">
                 <label for="customerName">Name</label>
@@ -934,6 +987,10 @@
               <div class="field">
                 <label for="customerPhone">Phone</label>
                 <input id="customerPhone" name="customerPhone" autocomplete="tel" required />
+              </div>
+              <div class="field">
+                <label for="customerEmail">Email</label>
+                <input id="customerEmail" name="customerEmail" type="email" autocomplete="email" placeholder="For receipt email" />
               </div>
               <div class="field">
                 <label for="pickupDate">Pickup / delivery date</label>
@@ -948,7 +1005,7 @@
                 <textarea id="orderNotes" name="orderNotes" placeholder="Example: less sweet, gift box, message card"></textarea>
               </div>
               <div class="form-status" id="formStatus"></div>
-              <button class="submit-order" id="submitOrder" type="submit">Submit order</button>
+              <button class="submit-order" id="submitOrder" type="submit">Submit pending payment order</button>
             </form>
           </div>
         </section>
@@ -1048,10 +1105,13 @@
           createdAt: new Date().toISOString(),
           customerName: formData.get("customerName"),
           customerPhone: formData.get("customerPhone"),
+          customerEmail: formData.get("customerEmail"),
           pickupDate: formData.get("pickupDate"),
           customerAddress: formData.get("customerAddress"),
           notes: formData.get("orderNotes"),
-          status: "New",
+          orderStatus: "New",
+          paymentMethod: "Static QR",
+          paymentStatus: "Pending Payment",
           total,
           items,
         };
@@ -1101,7 +1161,7 @@
         try {
           await submitToGoogleSheet(payload);
           formStatus.textContent =
-            "Order submitted. You can view it in your Google Sheet.";
+            "Order submitted as pending payment. We will verify payment manually.";
           cart.length = 0;
           checkoutForm.reset();
           renderCart();
