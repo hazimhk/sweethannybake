@@ -72,10 +72,44 @@ python3 -m http.server
 
 Then open: `http://localhost:8000`
 
+## 📥 Save Orders To Google Sheets
+
+This project can save customer checkout orders into a Google Sheet through Google Apps Script.
+
+Setup:
+
+1. Open [Google Apps Script](https://script.google.com/).
+2. Create a new project.
+3. Paste the code from `google-apps-script.js`.
+4. Run the `setup()` function once and approve Google permissions.
+5. Deploy the project:
+   - Click **Deploy** → **New deployment**
+   - Select **Web app**
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+6. Copy the Web App URL.
+7. Open `index.html` and set:
+
+```js
+const GOOGLE_SCRIPT_URL = "YOUR_WEB_APP_URL_HERE";
+```
+
+Orders will be saved into a Google Sheet named:
+
+```text
+Swee Hanny Bake Orders
+```
+
+The sheet will contain:
+
+- `Orders`
+- `Order Items`
+
 ## 📁 Project files
 
 - `index.html` — App UI and all logic
 - `logo.jpeg` — Branding image used in app header
+- `google-apps-script.js` — Google Apps Script backend for saving orders to Google Sheets
 - `README.md` — Documentation
 
 ## 📌 Notes

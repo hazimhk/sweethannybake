@@ -479,6 +479,125 @@
         cursor: pointer;
       }
 
+      .cart-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .cart-action.secondary {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+
+      .checkout-panel {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 50;
+        display: none;
+        background: rgba(247, 247, 245, 0.96);
+        border-top: 1px solid var(--line);
+        box-shadow: 0 -24px 48px rgba(0, 0, 0, 0.12);
+        padding: 1rem;
+      }
+
+      .checkout-panel.open {
+        display: block;
+      }
+
+      .checkout-inner {
+        width: min(680px, 100%);
+        margin: 0 auto;
+      }
+
+      .checkout-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.8rem;
+      }
+
+      .checkout-head h2 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.9rem;
+        font-weight: 400;
+      }
+
+      .checkout-close {
+        border: 0;
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+        font: inherit;
+        font-size: 1.3rem;
+      }
+
+      .checkout-summary {
+        display: grid;
+        gap: 0.35rem;
+        margin-bottom: 0.9rem;
+        color: rgba(0, 0, 0, 0.66);
+        font-size: 0.9rem;
+      }
+
+      .checkout-form {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .field {
+        display: grid;
+        gap: 0.32rem;
+      }
+
+      .field label {
+        font-size: 0.78rem;
+        color: rgba(0, 0, 0, 0.58);
+        text-transform: uppercase;
+      }
+
+      .field input,
+      .field textarea {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        color: var(--ink);
+        font: inherit;
+        padding: 0.62rem 0.7rem;
+      }
+
+      .field textarea {
+        min-height: 82px;
+        resize: vertical;
+      }
+
+      .form-status {
+        min-height: 20px;
+        color: rgba(0, 0, 0, 0.62);
+        font-size: 0.86rem;
+      }
+
+      .submit-order {
+        border: 0;
+        border-radius: 999px;
+        min-height: 44px;
+        background: var(--ink);
+        color: white;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+      }
+
+      .submit-order:disabled {
+        cursor: not-allowed;
+        opacity: 0.58;
+      }
+
       footer {
         width: min(1080px, calc(100% - 1.2rem));
         margin: 0 auto;
@@ -495,6 +614,16 @@
         .product-grid {
           grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 1.8rem 1rem;
+        }
+
+        .checkout-form {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .field.full,
+        .submit-order,
+        .form-status {
+          grid-column: 1 / -1;
         }
       }
 
@@ -655,8 +784,45 @@
             <span id="cartItems">No mochi selected</span>
             <strong id="cartTotal">RM 0.00</strong>
           </div>
-          <button class="cart-action" id="clearCart">Clear</button>
+          <div class="cart-actions">
+            <button class="cart-action secondary" id="clearCart">Clear</button>
+            <button class="cart-action" id="checkoutButton">Checkout</button>
+          </div>
         </aside>
+
+        <section class="checkout-panel" id="checkoutPanel" aria-label="Checkout form">
+          <div class="checkout-inner">
+            <div class="checkout-head">
+              <h2>Checkout</h2>
+              <button class="checkout-close" id="closeCheckout" aria-label="Close checkout">x</button>
+            </div>
+            <div class="checkout-summary" id="checkoutSummary"></div>
+            <form class="checkout-form" id="checkoutForm">
+              <div class="field">
+                <label for="customerName">Name</label>
+                <input id="customerName" name="customerName" autocomplete="name" required />
+              </div>
+              <div class="field">
+                <label for="customerPhone">Phone</label>
+                <input id="customerPhone" name="customerPhone" autocomplete="tel" required />
+              </div>
+              <div class="field">
+                <label for="pickupDate">Pickup / delivery date</label>
+                <input id="pickupDate" name="pickupDate" type="date" required />
+              </div>
+              <div class="field">
+                <label for="customerAddress">Pickup / delivery note</label>
+                <input id="customerAddress" name="customerAddress" placeholder="Pickup, delivery area, or address" />
+              </div>
+              <div class="field full">
+                <label for="orderNotes">Notes</label>
+                <textarea id="orderNotes" name="orderNotes" placeholder="Example: less sweet, gift box, message card"></textarea>
+              </div>
+              <div class="form-status" id="formStatus"></div>
+              <button class="submit-order" id="submitOrder" type="submit">Submit order</button>
+            </form>
+          </div>
+        </section>
 
         <footer>
           Swee Hanny Bake, 2026. Marketplace and production calculator for
@@ -683,16 +849,98 @@
       updateParallax();
       window.addEventListener("scroll", requestParallaxUpdate, { passive: true });
 
+      const GOOGLE_SCRIPT_URL = "";
       const cart = [];
       const cartItems = document.getElementById("cartItems");
       const cartTotal = document.getElementById("cartTotal");
       const clearCart = document.getElementById("clearCart");
+      const checkoutButton = document.getElementById("checkoutButton");
+      const checkoutPanel = document.getElementById("checkoutPanel");
+      const closeCheckout = document.getElementById("closeCheckout");
+      const checkoutSummary = document.getElementById("checkoutSummary");
+      const checkoutForm = document.getElementById("checkoutForm");
+      const formStatus = document.getElementById("formStatus");
+      const submitOrder = document.getElementById("submitOrder");
+
+      function getGroupedCart() {
+        return cart.reduce((items, item) => {
+          const existing = items.find((entry) => entry.name === item.name);
+          if (existing) {
+            existing.quantity += 1;
+            existing.subtotal += item.price;
+          } else {
+            items.push({
+              name: item.name,
+              price: item.price,
+              quantity: 1,
+              subtotal: item.price,
+            });
+          }
+          return items;
+        }, []);
+      }
 
       function renderCart() {
         const total = cart.reduce((sum, item) => sum + item.price, 0);
         cartItems.textContent =
           cart.length === 0 ? "No mochi selected" : `${cart.length} mochi selected`;
         cartTotal.textContent = `RM ${total.toFixed(2)}`;
+        checkoutButton.disabled = cart.length === 0;
+      }
+
+      function renderCheckoutSummary() {
+        const grouped = getGroupedCart();
+        const total = grouped.reduce((sum, item) => sum + item.subtotal, 0);
+        checkoutSummary.innerHTML = grouped.length
+          ? grouped
+              .map(
+                (item) =>
+                  `<div>${item.quantity}x ${item.name} - RM ${item.subtotal.toFixed(2)}</div>`
+              )
+              .join("") + `<strong>Total: RM ${total.toFixed(2)}</strong>`
+          : "<div>No mochi selected.</div>";
+      }
+
+      function openCheckout() {
+        if (cart.length === 0) return;
+        renderCheckoutSummary();
+        checkoutPanel.classList.add("open");
+      }
+
+      function closeCheckoutPanel() {
+        checkoutPanel.classList.remove("open");
+      }
+
+      function buildOrderPayload(formData) {
+        const items = getGroupedCart();
+        const total = items.reduce((sum, item) => sum + item.subtotal, 0);
+        return {
+          orderId: `SHB-${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          customerName: formData.get("customerName"),
+          customerPhone: formData.get("customerPhone"),
+          pickupDate: formData.get("pickupDate"),
+          customerAddress: formData.get("customerAddress"),
+          notes: formData.get("orderNotes"),
+          status: "New",
+          total,
+          items,
+        };
+      }
+
+      async function submitToGoogleSheet(payload) {
+        if (!GOOGLE_SCRIPT_URL) {
+          throw new Error("Google Apps Script URL is not configured.");
+        }
+
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8",
+          },
+          body: JSON.stringify(payload),
+        });
       }
 
       document.querySelectorAll(".add-button").forEach((button) => {
@@ -708,7 +956,35 @@
       clearCart.addEventListener("click", () => {
         cart.length = 0;
         renderCart();
+        renderCheckoutSummary();
       });
+
+      checkoutButton.addEventListener("click", openCheckout);
+      closeCheckout.addEventListener("click", closeCheckoutPanel);
+
+      checkoutForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const payload = buildOrderPayload(new FormData(checkoutForm));
+        submitOrder.disabled = true;
+        formStatus.textContent = "Submitting order...";
+
+        try {
+          await submitToGoogleSheet(payload);
+          formStatus.textContent =
+            "Order submitted. You can view it in your Google Sheet.";
+          cart.length = 0;
+          checkoutForm.reset();
+          renderCart();
+          renderCheckoutSummary();
+        } catch (error) {
+          formStatus.textContent = error.message;
+        } finally {
+          submitOrder.disabled = false;
+        }
+      });
+
+      renderCart();
     </script>
   </body>
 </html>
